@@ -1,0 +1,51 @@
+<?php
+
+// 我的博客地址啦
+$data = 'http://blog.csdn.net/molaifeng';
+
+// 宽高 200*200 的正方形
+$size = '200x200';
+
+// 中间那logo图
+$logo = 'logo.jpg';
+
+// 通过google api生成未加logo前的QR图，也可以自己使用RQcode类生成
+$png = 'http://chart.googleapis.com/chart?chs=' . $size . '&cht=qr&chl=' . urlencode($data) . '&chld=L|1&choe=UTF-8';
+
+$QR = imagecreatefrompng($png);
+
+if ($logo !== FALSE) {
+
+    // 从字符串中的图像流新建一图像
+    $logo = imagecreatefromstring(file_get_contents($logo));
+
+    // 二维码宽度
+    $QR_width = imagesx($QR);
+
+    // 二维码高度
+    $QR_height = imagesy($QR);
+
+    // logo宽度
+    $logo_width = imagesx($logo);
+
+    // logo高度
+    $logo_height = imagesy($logo);
+
+    // 下面四步是计算现在二维码中间的logo的大小
+    $logo_qr_width = $QR_width / 5;
+    $scale = $logo_width / $logo_qr_width;
+    $logo_qr_height = $logo_height / $scale;
+    $from_width = ($QR_width - $logo_qr_width) / 2;
+
+    // 重采样拷贝部分图像并调整大小，清晰度极大的保留
+    imagecopyresampled($QR, $logo, $from_width, $from_width, 0, 0, $logo_qr_width, $logo_qr_height, $logo_width, $logo_height);
+
+}
+
+// 浏览器展示
+header('Content-type: image/png');
+
+imagepng($QR);
+
+imagedestroy($QR);
+
